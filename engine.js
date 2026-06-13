@@ -278,31 +278,40 @@ async function initPose() {
   pose.onResults((results) => onPoseResults(results, ctx, canvas));
   Workout.pose = pose;
 
-  const camera = new Camera(video, {
-    onFrame: async () => {
-      if (Workout.active && !Workout.paused && Workout.pose) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        await Workout.pose.send({ image: video });
-      }
-    },
-    width: 640,
-    height: 480,
-  });
-  camera.start();
-  Workout.camera = camera;
+  // Drive frames ourselves (do NOT use the MediaPipe Camera helper — it
+  // tries to call getUserMedia a second time, which fails with
+  // NotReadableError on many phones because the camera is already in use
+  // by the stream we just opened above).
+  Workout._rafId = null;
+  let busy = false;
+  async function frameLoop() {
+    if (!Workout.pose) return; // stopped
+    if (Workout.active && !Workout.paused && !busy && video.videoWidth > 0) {
+      busy = true;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      try { await Workout.pose.send({ image: video }); } catch (e) { /* ignore transient errors */ }
+      busy = false;
+    }
+    Workout._rafId = requestAnimationFrame(frameLoop);
+  }
+  Workout._rafId = requestAnimationFrame(frameLoop);
 }
 
 function stopCamera() {
+  if (Workout._rafId) {
+    cancelAnimationFrame(Workout._rafId);
+    Workout._rafId = null;
+  }
   if (Workout._stream) {
     Workout._stream.getTracks().forEach(t => t.stop());
     Workout._stream = null;
   }
-  if (Workout.camera) {
-    try { Workout.camera.stop(); } catch (e) {}
-    Workout.camera = null;
+  if (Workout.pose) {
+    try { Workout.pose.close(); } catch (e) {}
+    Workout.pose = null;
   }
-  Workout.pose = null;
+  Workout.camera = null;
   const canvas = document.getElementById('cam-canvas');
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
