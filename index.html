@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#0A0D14" />
+<title>FitArena — Push-Up Combat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="default">
+
+<!-- ============ SPLASH ============ -->
+<section id="page-splash" class="page active splash">
+  <div class="splash-bg">
+    <div class="splash-ring r1"></div>
+    <div class="splash-ring r2"></div>
+    <div class="splash-ring r3"></div>
+  </div>
+  <div class="splash-content">
+    <div class="splash-logo">
+      <span class="logo-fit">FIT</span><span class="logo-arena">ARENA</span>
+    </div>
+    <p class="splash-tagline">Every rep counts. Literally.</p>
+    <div class="splash-loader">
+      <div class="splash-loader-bar" id="splash-progress"></div>
+    </div>
+    <p class="splash-status" id="splash-status">Loading pose engine…</p>
+  </div>
+  <button class="btn btn-primary splash-enter" id="btn-enter-app" hidden>Enter Arena</button>
+</section>
+
+<!-- ============ HOME ============ -->
+<section id="page-home" class="page">
+  <header class="topbar">
+    <button class="avatar-chip" id="home-avatar-btn">
+      <span class="avatar-emoji" id="home-avatar">🙂</span>
+      <span class="avatar-level" id="home-level-badge">1</span>
+    </button>
+    <div class="topbar-id">
+      <div class="topbar-name" id="home-username">Athlete</div>
+      <div class="topbar-rank" id="home-rank">Beginner</div>
+    </div>
+    <div class="topbar-coins">
+      <span class="icon-coin">●</span>
+      <span id="home-coins">0</span>
+    </div>
+  </header>
+
+  <div class="page-scroll">
+    <div class="xp-card">
+      <div class="xp-card-top">
+        <span class="xp-card-label">Level <strong id="home-level">1</strong></span>
+        <span class="xp-card-value"><span id="home-xp-cur">0</span> / <span id="home-xp-next">100</span> XP</span>
+      </div>
+      <div class="bar bar-xp"><div class="bar-fill" id="home-xp-fill"></div></div>
+    </div>
+
+    <div class="streak-row">
+      <div class="streak-card">
+        <div class="streak-flame">🔥</div>
+        <div>
+          <div class="streak-num" id="home-streak">0</div>
+          <div class="streak-label">Day Streak</div>
+        </div>
+      </div>
+      <div class="streak-card">
+        <div class="streak-flame">💯</div>
+        <div>
+          <div class="streak-num" id="home-today">0</div>
+          <div class="streak-label">Today's Reps</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Daily Goals</h2>
+      <span class="section-sub" id="home-goals-count">0/5</span>
+    </div>
+    <div class="goal-list" id="home-daily-goals"></div>
+
+    <div class="section-head">
+      <h2>Weekly &amp; Monthly</h2>
+    </div>
+    <div class="goal-list" id="home-period-goals"></div>
+
+
+    <button class="cta-start" id="btn-start-workout">
+      <span class="cta-icon">▶</span>
+      <span class="cta-text">
+        <strong>Start Workout</strong>
+        <small>Pick a mode &amp; begin training</small>
+      </span>
+      <span class="cta-arrow">→</span>
+    </button>
+
+    <div class="section-head">
+      <h2>This Week</h2>
+    </div>
+    <div class="week-chart" id="home-week-chart"></div>
+  </div>
+
+  <nav class="bottomnav" id="bottomnav"></nav>
+</section>
+
+<!-- ============ MODES ============ -->
+<section id="page-modes" class="page">
+  <header class="topbar topbar-simple">
+    <button class="iconbtn" data-nav="home">←</button>
+    <div class="topbar-title">Choose Mode</div>
+    <div class="topbar-spacer"></div>
+  </header>
+  <div class="page-scroll">
+    <div class="mode-grid" id="mode-grid"></div>
+  </div>
+  <nav class="bottomnav" id="bottomnav-modes"></nav>
+</section>
+
+<!-- ============ MODE OPTIONS SHEET ============ -->
+<div class="sheet-overlay" id="mode-sheet-overlay">
+  <div class="sheet" id="mode-sheet">
+    <div class="sheet-handle"></div>
+    <h3 id="mode-sheet-title">Mode</h3>
+    <p class="sheet-desc" id="mode-sheet-desc"></p>
+    <div class="sheet-options" id="mode-sheet-options"></div>
+    <button class="btn btn-primary btn-block" id="mode-sheet-go">Start</button>
+    <button class="btn btn-ghost btn-block" id="mode-sheet-cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- ============ WORKOUT ============ -->
+<section id="page-workout" class="page page-dark">
+  <div class="cam-wrap">
+    <video id="cam-video" playsinline autoplay muted></video>
+    <canvas id="cam-canvas"></canvas>
+
+    <div class="cam-gradient-top"></div>
+    <div class="cam-gradient-bottom"></div>
+
+    <div class="workout-topbar">
+      <button class="iconbtn iconbtn-glass" id="btn-exit-workout">✕</button>
+      <div class="workout-mode-label" id="workout-mode-label">Classic</div>
+      <button class="iconbtn iconbtn-glass" id="btn-pause-workout">❚❚</button>
+    </div>
+
+    <div class="workout-hud">
+      <div class="hud-left" id="hud-left"></div>
+      <div class="hud-center">
+        <div class="rep-counter" id="rep-counter">0</div>
+        <div class="rep-label">PUSH-UPS</div>
+        <div class="combo-badge" id="combo-badge" hidden>
+          <span id="combo-mult">x1</span> COMBO
+        </div>
+      </div>
+      <div class="hud-right" id="hud-right"></div>
+    </div>
+
+    <div class="boss-bar-wrap" id="boss-bar-wrap" hidden>
+      <div class="boss-info">
+        <span class="boss-emoji" id="boss-emoji">👹</span>
+        <span class="boss-name" id="boss-name">Iron Brute</span>
+      </div>
+      <div class="bar bar-boss"><div class="bar-fill" id="boss-hp-fill"></div></div>
+    </div>
+
+    <div class="feedback-banner" id="feedback-banner">
+      <span id="feedback-text">Get in frame, start your plank</span>
+    </div>
+
+    <div class="xp-floaters" id="xp-floaters"></div>
+
+    <div class="workout-bottombar">
+      <div class="wb-stat">
+        <span class="wb-val" id="wb-time">00:00</span>
+        <span class="wb-label">Time</span>
+      </div>
+      <div class="wb-stat">
+        <span class="wb-val" id="wb-calories">0</span>
+        <span class="wb-label">Calories</span>
+      </div>
+      <div class="wb-stat">
+        <span class="wb-val" id="wb-xp">0</span>
+        <span class="wb-label">XP Gained</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause overlay -->
+  <div class="overlay-panel" id="pause-overlay" hidden>
+    <div class="overlay-card">
+      <h2>Paused</h2>
+      <p>Take a breather, you've earned it.</p>
+      <button class="btn btn-primary btn-block" id="btn-resume-workout">Resume</button>
+      <button class="btn btn-ghost btn-block" id="btn-quit-workout">Quit Workout</button>
+    </div>
+  </div>
+
+  <!-- Camera permission overlay -->
+  <div class="overlay-panel" id="camera-overlay">
+    <div class="overlay-card">
+      <div class="overlay-icon">📷</div>
+      <h2>Camera Access Needed</h2>
+      <p>FitArena uses your camera to track push-ups in real time. Position your phone so your full body is visible from the side.</p>
+      <button class="btn btn-primary btn-block" id="btn-enable-camera">Enable Camera</button>
+      <p class="overlay-err" id="camera-err"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section id="page-results" class="page">
+  <div class="page-scroll results-scroll">
+    <div class="results-hero" id="results-hero">
+      <div class="results-ring">
+        <div class="results-count" id="results-count">0</div>
+        <div class="results-count-label">PUSH-UPS</div>
+      </div>
+      <h2 id="results-title">Workout Complete!</h2>
+      <p id="results-sub">Great effort, soldier.</p>
+    </div>
+
+    <div class="results-grid">
+      <div class="results-stat">
+        <span class="results-stat-val" id="results-time">0:00</span>
+        <span class="results-stat-label">Duration</span>
+      </div>
+      <div class="results-stat">
+        <span class="results-stat-val" id="results-cal">0</span>
+        <span class="results-stat-label">Calories</span>
+      </div>
+      <div class="results-stat">
+        <span class="results-stat-val" id="results-xp">+0</span>
+        <span class="results-stat-label">XP Earned</span>
+      </div>
+      <div class="results-stat">
+        <span class="results-stat-val" id="results-coins">+0</span>
+        <span class="results-stat-label">Coins</span>
+      </div>
+    </div>
+
+    <div id="results-levelup" class="results-levelup" hidden>
+      <div class="levelup-badge">⭐</div>
+      <div>
+        <strong>Level Up!</strong>
+        <p>You reached Level <span id="results-newlevel">2</span></p>
+      </div>
+    </div>
+
+    <div id="results-rankup" class="results-levelup rankup" hidden>
+      <div class="levelup-badge">🏆</div>
+      <div>
+        <strong>New Rank Unlocked!</strong>
+        <p id="results-newrank">Bronze</p>
+      </div>
+    </div>
+
+    <div id="results-achievements" class="results-achievements"></div>
+
+    <div class="section-head"><h2>Goal Progress</h2></div>
+    <div class="goal-list" id="results-goals"></div>
+
+    <button class="btn btn-primary btn-block" id="btn-results-done">Continue</button>
+  </div>
+</section>
+
+<!-- ============ PROFILE ============ -->
+<section id="page-profile" class="page">
+  <header class="topbar topbar-simple">
+    <div class="topbar-spacer"></div>
+    <div class="topbar-title">Profile</div>
+    <button class="iconbtn" data-nav="settings">⚙</button>
+  </header>
+  <div class="page-scroll">
+    <div class="profile-hero">
+      <button class="profile-avatar" id="profile-avatar-btn">
+        <span id="profile-avatar">🙂</span>
+        <span class="profile-avatar-edit">✎</span>
+      </button>
+      <div class="profile-name-row">
+        <input id="profile-username" class="profile-name-input" maxlength="16" />
+      </div>
+      <div class="profile-rank-pill" id="profile-rank">Beginner</div>
+      <div class="xp-card profile-xp-card">
+        <div class="xp-card-top">
+          <span class="xp-card-label">Level <strong id="profile-level">1</strong></span>
+          <span class="xp-card-value"><span id="profile-xp-cur">0</span> / <span id="profile-xp-next">100</span> XP</span>
+        </div>
+        <div class="bar bar-xp"><div class="bar-fill" id="profile-xp-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="badges-row" id="profile-badges"></div>
+
+    <div class="section-head"><h2>Lifetime Stats</h2></div>
+    <div class="stat-grid" id="profile-stats"></div>
+
+    <div class="section-head">
+      <h2>Achievements</h2>
+      <span class="section-sub" id="profile-ach-count">0/6</span>
+    </div>
+    <div class="ach-preview" id="profile-ach-preview"></div>
+    <button class="btn btn-ghost btn-block" data-nav="achievements">View All Achievements</button>
+  </div>
+  <nav class="bottomnav" id="bottomnav-profile"></nav>
+</section>
+
+<!-- ============ STATS ============ -->
+<section id="page-stats" class="page">
+  <header class="topbar topbar-simple">
+    <div class="topbar-spacer"></div>
+    <div class="topbar-title">Statistics</div>
+    <div class="topbar-spacer"></div>
+  </header>
+  <div class="page-scroll">
+    <div class="stat-grid" id="stats-grid"></div>
+
+    <div class="section-head"><h2>Activity (7 Days)</h2></div>
+    <div class="week-chart big" id="stats-week-chart"></div>
+
+    <div class="section-head"><h2>Workout History</h2></div>
+    <div class="history-list" id="stats-history"></div>
+  </div>
+  <nav class="bottomnav" id="bottomnav-stats"></nav>
+</section>
+
+<!-- ============ SHOP ============ -->
+<section id="page-shop" class="page">
+  <header class="topbar topbar-simple">
+    <div class="topbar-spacer"></div>
+    <div class="topbar-title">Shop</div>
+    <div class="topbar-coins">
+      <span class="icon-coin">●</span>
+      <span id="shop-coins">0</span>
+    </div>
+  </header>
+  <div class="page-scroll">
+    <div class="tabbar" id="shop-tabs">
+      <button class="tab active" data-tab="avatars">Avatars</button>
+      <button class="tab" data-tab="themes">Themes</button>
+      <button class="tab" data-tab="badges">Badges</button>
+    </div>
+    <div class="shop-grid" id="shop-grid"></div>
+  </div>
+  <nav class="bottomnav" id="bottomnav-shop"></nav>
+</section>
+
+<!-- ============ ACHIEVEMENTS ============ -->
+<section id="page-achievements" class="page">
+  <header class="topbar topbar-simple">
+    <button class="iconbtn" data-nav="profile">←</button>
+    <div class="topbar-title">Achievements</div>
+    <div class="topbar-spacer"></div>
+  </header>
+  <div class="page-scroll">
+    <div class="ach-list" id="ach-list"></div>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="page-settings" class="page">
+  <header class="topbar topbar-simple">
+    <button class="iconbtn" data-nav="profile">←</button>
+    <div class="topbar-title">Settings</div>
+    <div class="topbar-spacer"></div>
+  </header>
+  <div class="page-scroll">
+    <div class="settings-group">
+      <div class="settings-row">
+        <div>
+          <strong>Sound Effects</strong>
+          <p>Beeps, dings &amp; victory fanfare</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="setting-sound" checked /><span class="slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div>
+          <strong>Haptic Feedback</strong>
+          <p>Vibrate on reps &amp; milestones</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="setting-haptics" checked /><span class="slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div>
+          <strong>Show Skeleton Overlay</strong>
+          <p>Draw pose tracking on camera</p>
+        </div>
+        <label class="switch"><input type="checkbox" id="setting-skeleton" checked /><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Body Weight (for calories)</h2></div>
+    <div class="settings-group">
+      <div class="settings-row">
+        <div><strong>Weight (kg)</strong><p>Used to estimate calories burned</p></div>
+        <input type="number" id="setting-weight" class="weight-input" min="30" max="200" value="70" />
+      </div>
+    </div>
+
+    <div class="section-head"><h2>Data</h2></div>
+    <div class="settings-group">
+      <button class="settings-row settings-row-btn" id="btn-export-data">
+        <div><strong>Export Save Data</strong><p>Download your progress as JSON</p></div>
+        <span>↓</span>
+      </button>
+      <button class="settings-row settings-row-btn danger" id="btn-reset-data">
+        <div><strong>Reset Progress</strong><p>Erase all data and start fresh</p></div>
+        <span>⚠</span>
+      </button>
+    </div>
+
+    <div class="section-head"><h2>About</h2></div>
+    <div class="settings-group about-card">
+      <div class="splash-logo small"><span class="logo-fit">FIT</span><span class="logo-arena">ARENA</span></div>
+      <p>v1.0.0 — On-device push-up tracking powered by MediaPipe Pose. No video ever leaves your device.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DAILY LOGIN MODAL ============ -->
+<div class="sheet-overlay" id="login-overlay">
+  <div class="sheet center-sheet">
+    <div class="overlay-icon">🎁</div>
+    <h3>Daily Reward</h3>
+    <p id="login-streak-text">Day 1 streak</p>
+    <div class="login-rewards" id="login-rewards"></div>
+    <button class="btn btn-primary btn-block" id="btn-claim-login">Claim Reward</button>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<!-- MediaPipe Pose -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3.1620248257/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
+<script src="app.js"></script>
+<script src="engine.js"></script>
+</body>
+</html>
