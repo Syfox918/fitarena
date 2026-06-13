@@ -215,7 +215,11 @@ async function ensureCamera() {
       overlay.hidden = true;
     } catch (e) {
       console.error(e);
-      err.textContent = 'Camera access denied or unavailable. Check browser permissions and try again.';
+      const name = e && e.name ? e.name : 'Error';
+      if (name === 'NotAllowedError') err.textContent = 'Kamera izni reddedildi. Tarayıcı ayarlarından bu site için kameraya izin ver.';
+      else if (name === 'NotReadableError') err.textContent = 'Kamera başka bir uygulama tarafından kullanılıyor olabilir. Diğer sekmeleri/uygulamaları kapatıp tekrar deneyin.';
+      else if (name === 'NotFoundError') err.textContent = 'Cihazda kamera bulunamadı.';
+      else err.textContent = `Kamera hatası: ${name}. Lütfen tekrar deneyin.`;
     }
   };
 
@@ -231,10 +235,29 @@ async function initPose() {
   if (Workout.pose) return;
 
   const video = document.getElementById('cam-video');
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'environment', width: { ideal: 720 }, height: { ideal: 1280 } },
-    audio: false,
-  });
+  let stream = null;
+  let lastErr = null;
+
+  // Try a series of progressively looser constraints so we work on as many
+  // devices/browsers as possible.
+  const attempts = [
+    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false },
+    { video: { facingMode: 'environment' }, audio: false },
+    { video: { facingMode: 'user' }, audio: false },
+    { video: true, audio: false },
+  ];
+
+  for (const constraints of attempts) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      break;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+
+  if (!stream) throw lastErr || new Error('No camera available');
+
   video.srcObject = stream;
   Workout._stream = stream;
   await video.play();
@@ -263,8 +286,8 @@ async function initPose() {
         await Workout.pose.send({ image: video });
       }
     },
-    width: 720,
-    height: 1280,
+    width: 640,
+    height: 480,
   });
   camera.start();
   Workout.camera = camera;
